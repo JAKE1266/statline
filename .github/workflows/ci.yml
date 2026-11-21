@@ -19,9 +19,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - name: 安装自研排版微库 cjktable
-        run: pip install git+https://github.com/JAKE1266/cjktable.git
       - name: 运行单元测试
+        env:
+          PYTHONPATH: src
         run: python -m unittest discover -s tests -v
       - name: 冒烟测试(管道统计摘要)
         run: |
