@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    name: 测试(${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: 安装自研排版微库 cjktable
+        run: pip install git+https://github.com/JAKE1266/cjktable.git
+      - name: 运行单元测试
+        run: python -m unittest discover -s tests -v
+      - name: 冒烟测试(管道统计摘要)
+        run: |
+          python -m statline --version
+          printf '12\n98\n45\n67' | python -m statline --no-hist
