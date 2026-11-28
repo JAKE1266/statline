@@ -18,6 +18,13 @@ from .core.render import render_histogram, render_summary
 from .core.stats import histogram, summarize
 
 
+def _configure_standard_streams() -> None:
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def _parse_numbers(text: str) -> list:
     tokens = text.replace(",", " ").split()
     values = []
@@ -63,7 +70,7 @@ def cmd_summary(args) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="statline",
-        description="statline —— 零依赖的统计摘要命令行工具:"
+        description="statline —— 零运行时依赖的统计摘要命令行工具:"
                     "min/max/均值/中位数/标准差/百分位 + 文本直方图",
     )
     parser.add_argument("--version", action="version", version=f"statline {__version__}")
@@ -76,6 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
+    _configure_standard_streams()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.bins < 1:

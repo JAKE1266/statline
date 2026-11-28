@@ -3,27 +3,63 @@ name: CI
 on:
   push:
     branches: [main, master]
+    tags: ["v*"]
   pull_request:
 
 jobs:
+  build:
+    name: 构建发行产物
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 安装构建工具
+        run: python -m pip install build twine
+      - name: 构建 wheel 与 sdist
+        run: python -m build
+      - name: 检查发行元数据
+        run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: statline-dist
+          path: dist/*
+          if-no-files-found: error
+
   test:
     name: 测试(${{ matrix.os }}, Python ${{ matrix.python }})
+    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ["3.9", "3.11", "3.13"]
+        os: [ubuntu-24.04, windows-latest, macos-15-intel]
+        python: ["3.9", "3.10", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: statline-dist
+          path: ${{ runner.temp }}/statline-dist
+      - name: 在仓库外安装真实 wheel
+        run: >-
+          python -c "import glob, subprocess, sys;
+          wheels=glob.glob(sys.argv[1]+'/*.whl');
+          assert len(wheels)==1, wheels;
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-deps', wheels[0]])"
+          "${{ runner.temp }}/statline-dist"
+      - name: 检查已安装依赖
+        run: python -m pip check
+      - name: 创建仓库外测试目录
+        shell: bash
+        run: mkdir -p "${{ runner.temp }}/statline-smoke"
+      - name: 验证已安装发行包
+        working-directory: ${{ runner.temp }}/statline-smoke
+        run: python "${{ github.workspace }}/tests/smoke_installed.py"
       - name: 运行单元测试
-        env:
-          PYTHONPATH: src
-        run: python -m unittest discover -s tests -v
-      - name: 冒烟测试(管道统计摘要)
-        run: |
-          python -m statline --version
-          printf '12\n98\n45\n67' | python -m statline --no-hist
+        working-directory: ${{ runner.temp }}/statline-smoke
+        run: python -m unittest discover -s "${{ github.workspace }}/tests" -v

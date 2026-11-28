@@ -4,14 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "statline"
-version = "1.0.0"
-description = "statline —— 零依赖的统计摘要命令行工具:min/max/均值/中位数/标准差/百分位 + 文本直方图(渲染复用 cjktable)"
+version = "1.0.1"
+description = "statline —— 零运行时依赖的统计摘要命令行工具:min/max/均值/中位数/标准差/百分位 + 文本直方图"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [
-    # 自研终端排版微库(CJK 对齐),与项目集共同维护
-    "cjktable @ git+https://github.com/JAKE1266/cjktable.git",
-]
+dependencies = []
 license = { text = "MIT" }
 authors = [{ name = "JAKE1266" }]
 keywords = ["statistics", "summary", "percentile", "histogram", "cli"]

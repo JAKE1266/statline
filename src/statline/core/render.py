@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cjktable import pad
+from statline._vendor.cjktable import pad
 
 _LABEL_WIDTH = 10
 

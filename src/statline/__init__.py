@@ -10,7 +10,7 @@
 from statline.core.render import render_histogram, render_summary
 from statline.core.stats import histogram, percentile, summarize
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = ["histogram", "percentile", "render_histogram", "render_summary",
            "summarize", "__version__"]

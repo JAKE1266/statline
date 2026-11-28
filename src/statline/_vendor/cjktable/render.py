@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from cjktable.core import _display_width as _width
-from cjktable.core import pad, truncate
+from statline._vendor.cjktable.core import _display_width as _width
+from statline._vendor.cjktable.core import pad, truncate
 
 _COLUMN_GAP = "  "
 

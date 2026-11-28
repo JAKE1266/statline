@@ -4,6 +4,8 @@ import contextlib
 import io
 import json
 import math
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -167,6 +169,21 @@ class CliTest(unittest.TestCase):
         code, _, err = self.run_cli("--bins", "0", stdin="1")
         self.assertEqual(code, 1)
         self.assertIn("至少为 1", err)
+
+
+class LegacyEncodingCliTest(unittest.TestCase):
+    def test_utf8_output_under_legacy_encoding(self):
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+        result = subprocess.run(
+            [sys.executable, "-m", "statline", "--no-hist"],
+            input=b"1\n2\n3\n4",
+            capture_output=True,
+            env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8"))
+        output = result.stdout.decode("utf-8")
+        self.assertIn("样本数", output)
+        self.assertIn("中位数", output)
 
 
 if __name__ == "__main__":
